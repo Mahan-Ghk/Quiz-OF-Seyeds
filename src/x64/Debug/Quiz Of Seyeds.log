@@ -1,0 +1,3 @@
+﻿  main.cpp
+C:\Users\Mahan\Quiz Of Seyeds\Quiz Of Seyeds\Header.h(15,10): error C2678: binary '!=': no operator found which takes a left-hand operand of type 'std::string' (or there is no acceptable conversion)
+C:\Users\Mahan\Quiz Of Seyeds\Quiz Of Seyeds\Header.h(17,18): error C2676: binary '>>': 'std::ofstream' does not define this operator or a conversion to a type acceptable to the predefined operator
