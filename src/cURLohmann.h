@@ -1,9 +1,11 @@
+#include "curl/curl.h"
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
-#include "curl/curl.h"
 #include "nlohmann/json.hpp"
+//using namespace nlohmann;
+//using json = nlohmann::json;
 //#pragma once
 //intro :
 #ifdef _DEBUG
@@ -17,34 +19,52 @@
 #pragma comment (lib, "advapi32.lib")
 
 #define CURL_STATICLIB
-static size_t my_write(void* buffer, size_t size, size_t nmemb, void* param)
+static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-	std::string& text = *static_cast<std::string*>(param);
-	size_t totalsize = size * nmemb;
-	text.append(static_cast<char*>(buffer), totalsize);
-	return totalsize;
+	// Cast userdata back to std::string*
+	std::string* data = reinterpret_cast<std::string*>(userdata);
+	// Append the received data to the string
+	data->append(ptr, size * nmemb);
+	return size * nmemb;
 }
-void curler(std::string url)
+nlohmann::json curler(std::string url)
 {
 	std::string result;
 	CURL* curl;
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
-	if (curl) {
-		//curl_easy_setopt(curl, CURLOPT_URL, "https://tcno.co/hello.txt");
-		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		//		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_write);
-		//curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
-		//curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+	if (curl)
+	{
+		//curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_URL, "https://mocki.io/v1/01865c09-0e0c-4352-80d5-cbc7288adb20");
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+
+		// Set the user data pointer to be passed to the callback
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 		res = curl_easy_perform(curl);
-		curl_easy_cleanup(curl);
-		if (CURLE_OK != res) {
-			std::cerr << "CURL error: " << res << '\n';
+		
+		if (CURLE_OK != res) 
+		{
+			std::cerr << "\nCURL error: " << res << '\n';
 		}
+		else
+		{
+			try
+			{
+				nlohmann::json json_data = nlohmann::json::parse(result);
+				// Print the entire JSON data (optional)
+				std::cout << json_data["results"][0]["question"] << std::endl;
+			}
+			catch (nlohmann::json::parse_error& e) 
+			{
+				std::cerr << "\nError parsing JSON: " << e.what() << std::endl;
+			}
+		}
+		curl_easy_cleanup(curl);
 	}
 	curl_global_cleanup();
-	std::cout << result << "\n\n";
+	return result;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int find_category(std::string Category)
@@ -109,5 +129,4 @@ std::string URL_maker(std::string Difficulty, std::string Category)
 	return url;
 	//curler(url);
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
