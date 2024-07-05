@@ -1,32 +1,21 @@
-#include <iostream>
-#include <string>
-#include "cURLohmann.h"
-#include "gui/imgui/imgui.h"
-#include "gui/imgui/imgui_impl_dx9.h"
-#include "gui/imgui/imgui_impl_win32.h"
-#include <d3d9.h>
-
 //#include "gui.h"
-//#include <filesystem>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_dx9.h"
+#include "imgui/imgui_impl_win32.h"
+#include <d3d9.h>
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <tchar.h>
-#include <random>
-#include <time.h>
+
 // Close Buttons
 bool theme_button = false;
 bool dark_theme_button = true;
 bool error_button = false;
-bool pvp_button = false;
-bool survival_button = false;
-int r1;
-int r2;
-int r3;
-bool game_pvp = false;
+
 // Functions
 void stylish();
 void error_window(std::string error);
-std::vector <std::string> Q_A(std::string Categorey = "Japanese Anime & Manga", std::string Dificulty = "easy", std::string Mode = "PvP");
 
 // Data
 static LPDIRECT3D9              g_pD3D = nullptr;
@@ -40,10 +29,11 @@ void CleanupDeviceD3D();
 void ResetDevice();
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-int main()
+int main_gui()
 {
+
     // Create application window
-// ImGui_ImplWin32_EnableDpiAwareness();
+    // ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = {
         sizeof(wc),
         CS_CLASSDC,
@@ -89,7 +79,7 @@ int main()
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     // Load Fonts
-    //io.Fonts->AddFontDefault();
+    io.Fonts->AddFontDefault();
     //std::string font_path =
         //(executable_path.parent_path() / "misc" / "Lalezar.Regular.ttf").string();
    // ImFont* mainfont = io.Fonts->AddFontFromFileTTF(font_path.c_str(), 30);
@@ -108,11 +98,6 @@ int main()
     bool wrong_pass = false;
     bool login_pass = false;
 
-    std::string Categorey;
-    std::string Dificulty;
-    std::string Mode;
-    bool Inputs = false;
-    bool   diff = false;
     static char available_count_[128];
     static char name_[128];
     static char price_[128];
@@ -170,16 +155,12 @@ int main()
                     "##", passput, sizeof(passput),
                     ImGuiInputTextFlags_Password | ImGuiInputTextFlags_EnterReturnsTrue
                 );
-                /*
                 if (wrong_pass == true)
                 {
                     ImGui::Text("Wrong Password");
                 }
-                */
                 if (ImGui::Button("login") or log)
-                {
-                    logged = true;
-                    /*
+                {/*
                     if (users.get_user(1)->check_password(Password::from_string(passput)
                     ))
                     {
@@ -209,28 +190,18 @@ int main()
                 ImGui::SetCursorPos(ImVec2(280, 40));
                 ImGui::Text("Hello!");
                 ImGui::SetCursorPos(ImVec2(200, 60));
-                ImGui::Text("Wellcome to Quiz OF Seyeds");
+                ImGui::Text("Please choose the action:");
 
                 ImGui::SetCursorPos(ImVec2(20, 40));
                 if (ImGui::Button("Theme", ImVec2(70, 40)))
                 {
                     theme_button = true;
                 }
-                ImGui::SetCursorPos(ImVec2(40, 90));
-                if (ImGui::Button("PvP", ImVec2(70, 40)))
-                {
-                    pvp_button = true;
-                }
-                ImGui::SetCursorPos(ImVec2(40, 140));
-                if (ImGui::Button("Survival", ImVec2(70, 40)))
-                {
-                    survival_button = true;
-                }
-                ImGui::End();
 
+                ImGui::End();
             }
         }
-        //if ( name_ != NULL && price_ != NULL && available_count_ != NULL && descript_ != NULL )
+                //if ( name_ != NULL && price_ != NULL && available_count_ != NULL && descript_ != NULL )
 /*
                 if (ImGui::Button("Save"))
                 {
@@ -244,9 +215,9 @@ int main()
             }
             ImGui::End();
             */
-            //}
-
-            // Themes
+        //}
+ 
+        // Themes
         ImGui::SetNextWindowSize(ImVec2(165, 120));
         if (theme_button)
         {
@@ -276,113 +247,7 @@ int main()
             }
             ImGui::End();
         }
-        ImGui::SetNextWindowSize(ImVec2(500, 500));
-        if (pvp_button)
-        {
-            if (ImGui::Begin("PvP", &pvp_button,
-                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
-            {
-                if (!game_pvp)
-                {
-                    if (!Inputs)
-                    {
-                        ImGui::Text("Be ready to start the battle");
-                        if (ImGui::Button("Start", ImVec2(130, 50)))
-                        {
-                            Inputs = true;
-                            srand(time(0));
-                            ImGui::Text("Choose Categorey :");
-                            r1 = (rand() % (32 - 9 + 1)) + 9;
-                            r2 = (rand() % (32 - 9 + 1)) + 9;
-                            r3 = (rand() % (32 - 9 + 1)) + 9;
-                            if (r1 == r2)
-                            {
-                                r1 += 1;
-                            }
-                            if (r1 == r3)
-                            {
-                                r1 += 1;
-                            }
-                            if (r2 == r3)
-                            {
-                                r2 += 1;
-                            }
-                        }
-                    }
-                    if (Inputs)
-                    {
-                        if (!diff)
-                        {
-                            if (ImGui::Button(find_category(r1).c_str(), ImVec2(130, 50)))
-                            {
-                                Categorey = r1;
-                                diff = true;
-                            }
-                            else if (ImGui::Button(find_category(r2).c_str(), ImVec2(130, 50)))
-                            {
-                                Categorey = r2;
-                                diff = true;
-                            }
-                            else if (ImGui::Button(find_category(r3).c_str(), ImVec2(130, 50)))
-                            {
-                                Categorey = r3;
-                                diff = true;
-                            }
-                        }
-                        if (diff)
-                        {
-                            ImGui::Text("Choose Dificulty :");
-                            if (ImGui::Button("Easy", ImVec2(130, 50)))
-                            {
-                                Dificulty = "easy";
-                                game_pvp = true;
-                            }
-                            else if (ImGui::Button("Medium", ImVec2(130, 50)))
-                            {
-                                Dificulty = "medium";
-                                game_pvp = true;
-                            }
-                            else if (ImGui::Button("Hard", ImVec2(130, 50)))
-                            {
-                                Dificulty = "hard";
-                                game_pvp = true;
-                            }
-                        }
-
-                        //ImGui::Text("Choose Mode :");
-                        //ImGui::InputText("##", Mode     , sizeof(   Mode  ));
-                    }
-                }
-                if (game_pvp)
-                {
-                    //ImGui::Text(Q_A(Categorey, Dificulty, "pvp").c_str());
-                    /*
-                    std::vector <std::string> vec = Q_A(Categorey, Dificulty, "pvp");
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        ImGui::Text(vec[i].c_str());
-                    }*/
-                }
-            }ImGui::End();
-        }
-        else
-        {
-            Inputs = false;
-        }
-        ImGui::SetNextWindowSize(ImVec2(1000, 1000));
-        if (survival_button)
-        {
-            if (ImGui::Begin("Survival", &survival_button,
-                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
-            {
-                ImGui::Text("Welcome to survival\nIf you survive you earn your kingdom");
-                if (ImGui::Button("Start", ImVec2(130, 50)))
-                {
-
-                }
-            }ImGui::End();
-        }
-        //ImGui::PopFont();
+        ImGui::PopFont();
         // Rendering
         ImGui::EndFrame();
         g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -420,7 +285,6 @@ int main()
 
     return 0;
 }
-
 
 // Helper functions
 
@@ -572,40 +436,3 @@ void error_window(std::string error)
     }ImGui::End();
 
 }
-std::vector < std::string> Q_A(std::string Categorey ,std::string Dificulty ,std::string Mode)
-{
-    /*
-    std::string Categorey = "Japanese Anime & Manga";
-    std::string Dificulty = "easy";
-    std::string Mode = "PvP";
-    */
-    int t = tedad_soal(Mode);
-    std::string url = URL_maker(Dificulty, Categorey, t);
-    //nlohmann::json json_string = curler(url, t);
-    std::vector <std::string> vec = curler(url, t);
-    ////////////////////////////////////////////////////
-    //std::cout << "\n\n\n\n\n\n";
-    return vec;
-}
-/*
-std::string random_categorey()
-{
-    srand(time(0));
-    ImGui::Text("Choose Categorey :");
-    int r1 = (rand() % (32 - 9 + 1)) + 9;
-    int r2 = (rand() % (32 - 9 + 1)) + 9;
-    int r3 = (rand() % (32 - 9 + 1)) + 9;
-    if (r1 == r2)
-    {
-        r1 += 1;
-    }
-    if (r1 == r3)
-    {
-        r1 += 1;
-    }
-    if (r2 == r3)
-    {
-        r2 += 1;
-    }
-    return find
-}*/
