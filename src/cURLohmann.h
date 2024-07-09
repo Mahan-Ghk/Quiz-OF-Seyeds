@@ -3,10 +3,8 @@
 #include <string>
 #include <vector>
 #include "nlohmann/json.hpp"
-//using namespace nlohmann;
-//using json = nlohmann::json;
-//#pragma once
-//intro :
+#include <fstream>
+
 #include "gui/imgui/imgui.h"
 #ifdef _DEBUG
 #pragma comment (lib, "curl/libcurl_a_debug.lib")
@@ -17,13 +15,12 @@
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Wldap32.lib")
 #pragma comment (lib, "advapi32.lib")
+bool error_button = false;
 
 #define CURL_STATICLIB
 static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-	// Cast userdata back to std::string*
 	std::string* data = reinterpret_cast<std::string*>(userdata);
-	// Append the received data to the string
 	data->append(ptr, size * nmemb);
 	return size * nmemb;
 }
@@ -34,15 +31,12 @@ std::vector <std::string> curler(std::string url , int t)
 	CURLcode res;
 	curl_global_init(CURL_GLOBAL_DEFAULT);
 	curl = curl_easy_init();
-	//std::vector <std::vector <std::string>> vec[10][5];
-	std::vector<std::string> vec;
+	std::vector<std::string> vec = {};
 	if (curl)
 	{
-		//curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-		curl_easy_setopt(curl, CURLOPT_URL, "https://mocki.io/v1/01865c09-0e0c-4352-80d5-cbc7288adb20");
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		//curl_easy_setopt(curl, CURLOPT_URL, "https://mocki.io/v1/01865c09-0e0c-4352-80d5-cbc7288adb20");
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-
-		// Set the user data pointer to be passed to the callback
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 		res = curl_easy_perform(curl);
 		if (CURLE_OK != res) 
@@ -54,31 +48,13 @@ std::vector <std::string> curler(std::string url , int t)
 			try
 			{
 				nlohmann::json json_data = nlohmann::json::parse(result);
-				// Print the entire JSON data (optional)
 				for (int i = 0; i < t; ++i)
 				{
-					/*
-					char* decoded = curl_unescape(json_data["results"][i]["question"], 12);//.value<char*>()
-					char* decoded = curl_unescape(json_data["results"][i]["correct_answer"], 12);
-					char* decoded = curl_unescape(json_data["results"][i]["incorrect_answers"], 12);
-					*/
-					
-					//std::cout << json_data["results"][i]["question"] << std::endl;
-					//std::cout << json_data["results"][i]["correct_answer"] << std::endl;
-					//std::cout << json_data["results"][i]["incorrect_answers"] << std::endl;
-					/*vec[i][0].push_back(json_data["results"][i]["question"]);
-					vec[i][1].push_back(json_data["results"][i]["correct_answer"]);
-					vec[i][2].push_back(json_data["results"][i]["incorrect_answers"][0]);
-					vec[i][3].push_back(json_data["results"][i]["incorrect_answers"][1]);
-					vec[i][4].push_back(json_data["results"][i]["incorrect_answers"][2]);*/
 					vec.push_back(json_data["results"][i]["question"]);
 					vec.push_back(json_data["results"][i]["correct_answer"]);
-					vec.push_back(json_data["results"][i]["incorrect_answers"]);
-
-					//return vec;
-					//std::string t = json_data["results"][i]["question"];
-					//ImGui::Text(t.c_str());
-					
+					vec.push_back(json_data["results"][i]["incorrect_answers"][0]);
+					vec.push_back(json_data["results"][i]["incorrect_answers"][1]);
+					vec.push_back(json_data["results"][i]["incorrect_answers"][2]);
 				}
 			}
 			catch (nlohmann::json::parse_error& e) 
@@ -89,9 +65,7 @@ std::vector <std::string> curler(std::string url , int t)
 		curl_easy_cleanup(curl);
 	}
 	curl_global_cleanup();
-	//return vec[10][5];
 	return vec;
-	//return result;
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::string find_category(int Category)
@@ -130,25 +104,6 @@ std::string find_category(int Category)
 }
 int find_category(std::string Category)
 {
-	/*std::ofstream category_file;
-	if (category_file.is_open())
-	{
-		category_file.open("Categoriess.txt", std::ios::in| std::ios::out);
-		char Category_in_file[128];
-		int t = 0;
-		while (Category_in_file != NULL)
-		{
-			category_file << Category_in_file;
-			if (Category == Category_in_file)
-			{
-				return t;
-			}
-			else
-			{
-				t++;
-			}
-		}
-	}*/
 	std::vector<std::vector<std::string>> categorey_list = { {"General Knowledge", "9"},
 		{"Books", "10"},
 		{"Film", "11"},
@@ -191,6 +146,10 @@ int tedad_soal(std::string Mode)
 	{
 		return 20;
 	}
+	else if (Mode == "Golden" || Mode == "golden")
+	{
+		return 40;
+	}
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::string URL_maker(std::string Difficulty, std::string Category, int t)
@@ -198,6 +157,104 @@ std::string URL_maker(std::string Difficulty, std::string Category, int t)
 	int cate_num = find_category(Category);
 	std::string url = "https://opentdb.com/api.php?amount="+std::to_string(t)+"&category="+std::to_string(cate_num)+"&difficulty="+Difficulty+"&type=multiple";
 	return url;
-	//curler(url);
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void error_window(std::string error)
+{
+	ImGui::SetNextWindowSize(ImVec2(400, 400));
+	if (ImGui::Begin("Error !!", &error_button,
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+	{
+		ImGui::Text(error.c_str());
+		if (ImGui::Button("close", ImVec2(130, 50)))
+		{
+			error_button = false;
+		}
+	}ImGui::End();
+
+}
+void vec_saver(std::vector <std::string > vec)
+{
+	std::fstream file;
+	file.open("Q_A.txt", std::ios::in | std::ios::out);
+	for (int i = 0; i < vec.size(); ++i)
+	{
+		file << vec[i] << "\n";
+	}
+}
+void score_saver(std::string  name, int score, std::string Dificulty)
+{
+	std::vector <std::vector <std::string >> vec;
+	std::fstream file;
+	std::string path = "scoreboard/" + Dificulty + "scoreboard.txt";
+	if (!file.is_open())
+	{
+		error_button = true;
+		error_window("Cant open Score Board file");
+	}
+}
+void score_reader(std::string Dificulty)
+{
+	std::fstream file;
+	std::string path = "scoreboard/" + Dificulty + "scoreboard.txt";
+	file.open(path, std::ios::in | std::ios::app);
+
+	if (!file.is_open())
+	{
+		error_button = true;
+		error_window("Cant open Score Board file");
+	}
+	else
+	{
+		std::string n, s;
+		try
+		{
+			if (!(file >> n >> s))
+			{
+				throw 1;
+			}
+			else
+			{
+				int t = 1;
+				ImGui::Text("Name     Score");
+				while (!file.eof())
+				{
+					file >> n >> s;
+					if (t == 1)
+					{
+						ImGui::Text("The Big Winner");
+					}
+					ImGui::Text(("#"+std::to_string(t)).c_str());
+					ImGui::Text((n +"\t"+ s).c_str());
+					ImGui::Separator();
+					t++;
+				}
+			}
+		}
+		catch (...)
+		{
+			error_button = true;
+			error_window("No Score info were save");
+		}
+	}
+}
+void Im_Spinner(const char* label, float radius, float thickness, ImU32 color) 
+{
+	ImGuiStyle* style = &ImGui::GetStyle();
+	ImVec2 pos = ImGui::GetCursorScreenPos();
+	ImVec2 size = ImVec2(radius * 2, radius * 2);
+	ImGui::Dummy(size);
+	ImDrawList* DrawList = ImGui::GetWindowDrawList();
+	DrawList->PathClear();
+	int num_segments = 30;
+	float start = fabsf(sinf(ImGui::GetTime() * 1.8f) * (num_segments - 5));
+	float a_min = 3.14159265358979323846f * 2.0f * start / num_segments;
+	float a_max = 3.14159265358979323846f * 2.0f * (num_segments - 3) / num_segments;
+	ImVec2 centre = ImVec2(pos.x + size.x * 0.5f, pos.y + size.y * 0.5f);
+	for (int i = 0; i <= num_segments; i++) 
+	{
+		float a = a_min + (i / (float)num_segments) * (a_max - a_min);
+		DrawList->PathLineTo(ImVec2(centre.x + cosf(a + ImGui::GetTime() * 8) * radius, centre.y + sinf(a + ImGui::GetTime() * 8) * radius));
+	}
+	DrawList->PathStroke(color, false, thickness);
+}

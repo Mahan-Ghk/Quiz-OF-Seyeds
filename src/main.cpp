@@ -6,27 +6,46 @@
 #include "gui/imgui/imgui_impl_win32.h"
 #include <d3d9.h>
 
-//#include "gui.h"
-//#include <filesystem>
 #include <iostream>
 #include <string>
 #include <tchar.h>
 #include <random>
 #include <time.h>
+#include <ctime>
+#include <thread>
+#include <chrono>
 // Close Buttons
 bool theme_button = false;
 bool dark_theme_button = true;
-bool error_button = false;
 bool pvp_button = false;
 bool survival_button = false;
+bool scoreboard_button = false;
+bool score_window_easy = false;
+bool score_window_medium = false;
+bool score_window_hard = false;
+bool name_in = false;
+bool loading_button = false;
+
 int r1;
 int r2;
 int r3;
-bool game_pvp = false;
+int k = 1;
+int trues1 = 0;
+int wrongs1 = 0;
+int trues2 = 0;
+int wrongs2 = 0;
+int surv_wrongs = 0;
+int surv_trues = 0;
+bool game_pvp  = false;
+bool game_pvp_show = false;
+bool game_surv = false;
+bool game_surv_show = false;
+bool golden = false;
 // Functions
 void stylish();
-void error_window(std::string error);
-std::vector <std::string> Q_A(std::string Categorey = "Japanese Anime & Manga", std::string Dificulty = "easy", std::string Mode = "PvP");
+void stylish_survival();
+void timer(int sec);
+std::vector <std::string> Q_A(std::string Categorey /*= "Japanese Anime & Manga"*/, std::string Dificulty /*= "easy"*/, std::string Mode = "PvP");
 
 // Data
 static LPDIRECT3D9              g_pD3D = nullptr;
@@ -60,7 +79,7 @@ int main()
     };
     ::RegisterClassExW(&wc);
     HWND hwnd = ::CreateWindowW(
-        wc.lpszClassName, L"SEYED SHOP", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800,
+        wc.lpszClassName, L"SEYED VERSE", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800,
         nullptr, nullptr, wc.hInstance, nullptr
     );
 
@@ -89,11 +108,9 @@ int main()
     ImGui_ImplDX9_Init(g_pd3dDevice);
 
     // Load Fonts
-    //io.Fonts->AddFontDefault();
-    //std::string font_path =
-        //(executable_path.parent_path() / "misc" / "Lalezar.Regular.ttf").string();
-   // ImFont* mainfont = io.Fonts->AddFontFromFileTTF(font_path.c_str(), 30);
-    //IM_ASSERT(mainfont != NULL);
+    std::string font_path ="misc/Mikhak-Bold.ttf";
+    ImFont* mainfont = io.Fonts->AddFontFromFileTTF(font_path.c_str(), 30);
+    
     // Our state
     ImVec4 clear_color = ImVec4(40, 40, 40, 50);
 
@@ -111,10 +128,11 @@ int main()
     std::string Categorey;
     std::string Dificulty;
     std::string Mode;
-    bool Inputs = false;
-    bool   diff = false;
+    bool Inputs      = false;
+    bool Inputs_surv = false;
+    bool diff        = false;
     static char available_count_[128];
-    static char name_[128];
+    static char name[128];
     static char price_[128];
     static char descript_[128];
     static char start_date_[128] = "\0";
@@ -154,41 +172,19 @@ int main()
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
-        //ImGui::PushFont(mainfont);
         ImGui::SetNextWindowSize(ImVec2(400, 300));
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
         if (login_pass == false)
         {
             if (ImGui::Begin(
-                "LOGIN", NULL,
+                "##", NULL,
                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
             ))
             {
-
-                ImGui::Text("Enter Your Password");
-                bool log = ImGui::InputText(
-                    "##", passput, sizeof(passput),
-                    ImGuiInputTextFlags_Password | ImGuiInputTextFlags_EnterReturnsTrue
-                );
-                /*
-                if (wrong_pass == true)
-                {
-                    ImGui::Text("Wrong Password");
-                }
-                */
-                if (ImGui::Button("login") or log)
+                ImGui::SetCursorPos(ImVec2(100, 150));
+                if (ImGui::Button("Start the journey",ImVec2(200,50)))
                 {
                     logged = true;
-                    /*
-                    if (users.get_user(1)->check_password(Password::from_string(passput)
-                    ))
-                    {
-                        logged = true;
-                    }
-                    else
-                    {
-                        wrong_pass = true;
-                    }*/
                 }
             }
             ImGui::End();
@@ -205,10 +201,9 @@ int main()
                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
             ))
             {
-                // ImGui::SetWindowFontScale(2.0f);
                 ImGui::SetCursorPos(ImVec2(280, 40));
                 ImGui::Text("Hello!");
-                ImGui::SetCursorPos(ImVec2(200, 60));
+                ImGui::SetCursorPos(ImVec2(185, 60));
                 ImGui::Text("Wellcome to Quiz OF Seyeds");
 
                 ImGui::SetCursorPos(ImVec2(20, 40));
@@ -217,34 +212,22 @@ int main()
                     theme_button = true;
                 }
                 ImGui::SetCursorPos(ImVec2(40, 90));
-                if (ImGui::Button("PvP", ImVec2(70, 40)))
+                if (ImGui::Button("PvP", ImVec2(140, 80)))
                 {
-                    pvp_button = true;
+                    loading_button = true;
                 }
-                ImGui::SetCursorPos(ImVec2(40, 140));
-                if (ImGui::Button("Survival", ImVec2(70, 40)))
+                ImGui::SetCursorPos(ImVec2(420, 90));
+                if (ImGui::Button("Survival", ImVec2(140, 80)))
                 {
                     survival_button = true;
                 }
-                ImGui::End();
-
-            }
-        }
-        //if ( name_ != NULL && price_ != NULL && available_count_ != NULL && descript_ != NULL )
-/*
-                if (ImGui::Button("Save"))
+                ImGui::SetCursorPos(ImVec2(160, 190));
+                if (ImGui::Button("Score Board", ImVec2(280, 80)))
                 {
-                    add_product(name_, price_, available_count_, descript_, products);
-                    add_product_button = false;
-                    memset(name_, 0, sizeof name_);
-                    memset(price_, 0, sizeof price_);
-                    memset(available_count_, 0, sizeof available_count_);
-                    memset(descript_, 0, sizeof descript_);
+                    scoreboard_button = true;
                 }
-            }
-            ImGui::End();
-            */
-            //}
+            }ImGui::End();
+        }
 
             // Themes
         ImGui::SetNextWindowSize(ImVec2(165, 120));
@@ -268,15 +251,64 @@ int main()
                     if (ImGui::Button("Dark", ImVec2(130, 50)))
                     {
                         stylish();
-                        // ImGui::StyleColorsDark();
-                        // //ImGui::PushStyle(style);
                         dark_theme_button = true;
                     }
                 }
             }
             ImGui::End();
         }
-        ImGui::SetNextWindowSize(ImVec2(500, 500));
+///////// PVP
+        if (loading_button)
+        {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(600, 500));
+            if (ImGui::Begin("Loading . . . . . ", &loading_button, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+            {
+                ImGui::Text("Usefull tips :");
+                if (k == 1)
+                {
+                    ImGui::SetCursorPos(ImVec2(50, 100));
+                    ImGui::Text("Answer 5 questions correctly to win");
+                }
+                else if (k == 2)
+                {
+                    ImGui::SetCursorPos(ImVec2(50, 100));
+                    ImGui::Text("Click on the correct button to register");
+                }
+                else if (k == 3)
+                {
+                    ImGui::SetCursorPos(ImVec2(50, 100));
+                    ImGui::Text("If you click on the wrong option, you will not get point");
+                }
+                else if (k == 4)
+                {
+                    ImGui::SetCursorPos(ImVec2(50, 100));
+                    ImGui::Text("If you click on the right option, you will get point");
+                }
+                else
+                {
+                    ImGui::SetCursorPos(ImVec2(50, 100));
+                    ImGui::Text("If you beat your opponent , you win");
+                }
+                ImGui::SetCursorPos(ImVec2(270, 230));
+                Im_Spinner("##s", 20, 5, IM_COL32(255, 255, 255, 255));
+                ImGui::SetCursorPos(ImVec2(50, 450));
+                if (ImGui::Button("Next Tip"))
+                {
+                    k = (rand() % (5 - 1 + 1));
+                }
+                ImGui::SetCursorPos(ImVec2(440, 450));
+                if (ImGui::Button("Continue >>"))
+                {
+                    pvp_button = true;
+                    loading_button = false;
+                }
+
+
+            }ImGui::End();
+        }
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(600, 500));
         if (pvp_button)
         {
             if (ImGui::Begin("PvP", &pvp_button,
@@ -313,19 +345,19 @@ int main()
                     {
                         if (!diff)
                         {
-                            if (ImGui::Button(find_category(r1).c_str(), ImVec2(130, 50)))
+                            if (ImGui::Button(find_category(r1).c_str(), ImVec2(180, 50)))
                             {
-                                Categorey = r1;
+                                Categorey = find_category(r1);
                                 diff = true;
                             }
-                            else if (ImGui::Button(find_category(r2).c_str(), ImVec2(130, 50)))
+                            if (ImGui::Button(find_category(r2).c_str(), ImVec2(180, 50)))
                             {
-                                Categorey = r2;
+                                Categorey = find_category(r2);
                                 diff = true;
                             }
-                            else if (ImGui::Button(find_category(r3).c_str(), ImVec2(130, 50)))
+                            if (ImGui::Button(find_category(r3).c_str(), ImVec2(180, 50)))
                             {
-                                Categorey = r3;
+                                Categorey = find_category(r3);
                                 diff = true;
                             }
                         }
@@ -337,52 +369,345 @@ int main()
                                 Dificulty = "easy";
                                 game_pvp = true;
                             }
-                            else if (ImGui::Button("Medium", ImVec2(130, 50)))
+                            if (ImGui::Button("Medium", ImVec2(130, 50)))
                             {
                                 Dificulty = "medium";
                                 game_pvp = true;
                             }
-                            else if (ImGui::Button("Hard", ImVec2(130, 50)))
+                            if (ImGui::Button("Hard", ImVec2(130, 50)))
                             {
                                 Dificulty = "hard";
                                 game_pvp = true;
+                                pvp_button = false;
+                            }
+                        }
+                    }
+                }
+
+            }ImGui::End();
+        }
+        /*
+        else
+        {
+            pvp_button = false;
+            Inputs = false;
+            diff = false;
+            Dificulty = "";
+            Categorey = "";
+            r1 = NULL;
+            r2 = NULL;
+            r3 = NULL;
+        }*/
+        /*
+        Dificulty = "";
+        Categorey = "";
+        r1 = NULL;
+        r2 = NULL;
+        r3 = NULL;*/
+        if (game_pvp)
+        {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(600, 500));
+            if (ImGui::Begin("PvP", &game_pvp, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+            {
+                std::vector <std::string> vec;
+                if (!golden)
+                    vec = Q_A(Categorey, Dificulty, "pvp");
+                if (golden)
+                {
+
+                    srand(time(0));
+                    int r4 = (rand() % (32 - 9 + 1)) + 9;
+                    Categorey = find_category(r4);
+                    int r5 = (rand() % (3 - 1 + 1));
+                    if (r5 == 1)
+                        Dificulty = "easy";
+                    else if (r5 == 2)
+                        Dificulty = "medium";
+                    else
+                        Dificulty = "hard";
+                    Q_A(Categorey, Dificulty, "Golden");
+                }
+                vec_saver(vec);
+                game_pvp_show = true;
+                game_pvp = false;
+            }ImGui::End();
+        }
+        int nafar = 1;
+        if (game_pvp_show)
+        //for (int nafar = 1 ; nafar <= 2;++nafar)
+        {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(800, 500));
+            if (ImGui::Begin("Choose the right answer", &game_pvp_show, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+            {
+
+                std::fstream file;
+                std::string question;
+                file.open("Q_A.txt", std::ios::in);
+                int t = 0;
+                std::vector <std::string > vec1;
+                std::vector <std::string > vect;
+                while (!file.eof())
+                {
+                    time_t start = time(NULL);
+                    time_t taken = time(NULL) + 0.5;
+                    //while (start <= taken)
+                    {
+                        //ImGui::SetCursorPos(ImVec2(50, 50));
+                        //ImGui::Text(("elapsed time : " + std::to_string(i)).c_str());
+                        //start = time(NULL);
+                        int a[4] = { 0,0,0,0 };
+                        getline(file, question);
+                            if (t  % 5 == 0)
+                            {
+                                t++;
+                                ImGui::Text(question.c_str());
+
+                            }
+                            else if (t % 5 == 1)
+                            {
+                                t++;
+                                if (ImGui::Button(question.c_str()))
+                                {
+                                    if (nafar == 1)
+                                        trues1++;
+                                    else
+                                        trues2++;
+                                }
+
+                            }
+                            else if (t % 5 == 2)
+                            {
+                                t++;
+                                if (ImGui::Button(question.c_str()))
+                                {
+                                    if (nafar == 1)
+                                        wrongs1++;
+                                    else 
+                                        wrongs2++;
+                                }
+                            }
+                            else if (t % 5 == 3)
+                            {
+                                t++;
+                                if (ImGui::Button(question.c_str()))
+                                {
+                                    if (nafar == 1)
+                                        wrongs1++;
+                                    else
+                                        wrongs2++;
+                                }
+                            }
+                            else if (t % 5 == 4)
+                            {
+                                t++;
+                                if (ImGui::Button(question.c_str()))
+                                {
+                                    if (nafar == 1)
+                                        wrongs1++;
+                                    else
+                                        wrongs2++;
+                                }
+                            }
+                    }
+                }
+                /*
+                if (trues1 == trues2)
+                {
+                    game_pvp = true;
+                    golden = true;
+                }*/
+            }ImGui::End();
+        }
+///////// SURVIVAL
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowSize(ImVec2(600, 500));
+        if (survival_button)
+        {
+            if (!game_surv)
+            {
+                if (ImGui::Begin("Survival", &survival_button,
+                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+                {
+                    if (!Inputs_surv)
+                    {
+                        ImGui::Text("Welcome to survival\nIf you survive you earn your wisdom");
+                        if (ImGui::Button("Start", ImVec2(130, 50)))
+                        {
+                            Inputs_surv = true;
+                            stylish_survival();
+                        }
+                    }
+                    if (Inputs_surv)
+                    {
+                        if (!name_in)
+                        {
+                            ImGui::Text("Enter your Seyedi nick name :");
+                            name_in = ImGui::InputText("##", name, sizeof(name), ImGuiInputTextFlags_EnterReturnsTrue);
+                        }
+                        if (name_in)
+                        {
+                            ImGui::Text("Choose Dificulty :");
+                            if (ImGui::Button("Easy", ImVec2(130, 50)))
+                            {
+                                Dificulty = "easy";
+                                game_surv = true;
+                            }
+                            if (ImGui::Button("Medium", ImVec2(130, 50)))
+                            {
+                                Dificulty = "medium";
+                                game_surv = true;
+                            }
+                            if (ImGui::Button("Hard", ImVec2(130, 50)))
+                            {
+                                Dificulty = "hard";
+                                game_surv = true;
+                            }
+                        }
+                    }
+                }ImGui::End();
+            }
+            if (game_surv)
+            {
+                if (ImGui::Begin("Survaival", &game_surv,
+                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+                {
+                    srand(time(0));
+                    int r4 = (rand() % (32 - 9 + 1)) + 9;
+                    Categorey = find_category(r4);
+                    std::vector <std::string> vec = Q_A(Categorey, Dificulty, "Survival");
+                    vec_saver(vec);
+                    game_surv_show = true;
+                    game_surv = false;
+                }ImGui::End();
+            }
+        }
+        if (game_surv_show)
+        {
+            if (ImGui::Begin("Choose the right answer", &game_surv_show,
+                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+            {
+                while (surv_wrongs <= 3)
+                {
+                    std::fstream file;
+                    std::string question;
+                    file.open("Q_A.txt", std::ios::in);
+                    int t = 0;
+                    while (!file.eof())
+                    {
+                        t++;
+                        getline(file, question);
+                        if (t % 5 == 0)
+                        {
+                            t++;
+                            ImGui::Text(question.c_str());
+                        }
+                        else if (t % 5 == 1)
+                        {
+                            t++;
+                            if (ImGui::Button(question.c_str()))
+                            {
+                                surv_trues++;
+                            }
+
+                        }
+                        else if (t % 5 == 2)
+                        {
+                            t++;
+                            if (ImGui::Button(question.c_str()))
+                            {
+                                surv_wrongs++;
+                            }
+                        }
+                        else if (t % 5 == 3)
+                        {
+                            t++;
+                            if (ImGui::Button(question.c_str()))
+                            {
+                                surv_wrongs++;
+                            }
+                        }
+                        else if (t % 5 == 4)
+                        {
+                            t++;
+                            if (ImGui::Button(question.c_str()))
+                            {
+                                surv_wrongs++;
                             }
                         }
 
-                        //ImGui::Text("Choose Mode :");
-                        //ImGui::InputText("##", Mode     , sizeof(   Mode  ));
                     }
                 }
-                if (game_pvp)
-                {
-                    //ImGui::Text(Q_A(Categorey, Dificulty, "pvp").c_str());
-                    /*
-                    std::vector <std::string> vec = Q_A(Categorey, Dificulty, "pvp");
-                    for (int i = 0; i < 5; ++i)
-                    {
-                        ImGui::Text(vec[i].c_str());
-                    }*/
-                }
+                score_saver(name, surv_trues, Dificulty);
+                surv_wrongs = 0;
+                surv_trues = 0;
             }ImGui::End();
         }
-        else
+        /*else
         {
-            Inputs = false;
-        }
-        ImGui::SetNextWindowSize(ImVec2(1000, 1000));
-        if (survival_button)
+            survival_button = false;
+            Inputs_surv = false;
+            game_surv = false;
+            Dificulty = "";
+            Categorey = "";
+            r1 = NULL;
+            r2 = NULL;
+            r3 = NULL;
+            stylish();
+        }*/
+        if (scoreboard_button)
         {
-            if (ImGui::Begin("Survival", &survival_button,
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(600, 500));
+            if(ImGui::Begin("Score Board", &scoreboard_button,
                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
             {
-                ImGui::Text("Welcome to survival\nIf you survive you earn your kingdom");
-                if (ImGui::Button("Start", ImVec2(130, 50)))
+                ImGui::Text("Choose Dificulty :");
+                if (ImGui::Button("Easy", ImVec2(130, 50)))
                 {
-
+                    score_window_easy = true;
+                }
+                else if (ImGui::Button("Medium", ImVec2(130, 50)))
+                {
+                    score_window_medium = true;
+                }
+                else if (ImGui::Button("Hard", ImVec2(130, 50)))
+                {
+                    score_window_hard = true;
                 }
             }ImGui::End();
         }
-        //ImGui::PopFont();
+        if (score_window_easy)
+        {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(600, 500));
+            if (ImGui::Begin("Score Board Easy", &score_window_easy,
+                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+            {
+                score_reader("easy");
+            }ImGui::End();
+        }
+        if (score_window_medium)
+        {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(600, 500));
+            if (ImGui::Begin("Score Board Medium", &score_window_medium,
+                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+            {
+                score_reader("medium");
+            }ImGui::End();
+        }
+        if (score_window_hard)
+        {
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+            ImGui::SetNextWindowSize(ImVec2(600, 500));
+            if (ImGui::Begin("Score Board Hard", &score_window_hard,
+                ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
+            {
+                score_reader("hard");
+            }ImGui::End();
+        }
         // Rendering
         ImGui::EndFrame();
         g_pd3dDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
@@ -519,7 +844,7 @@ void stylish()
     style.ScrollbarRounding = 9.0f;
     style.GrabMinSize = 5.0f;
     style.GrabRounding = 3.0f;
-    style.Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.83f, 1.00f);
+    style.Colors[ImGuiCol_Text] = ImVec4(1.0f, 1.0f, 1.0f, 1.00f);
     style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
     style.Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
@@ -548,7 +873,7 @@ void stylish()
     style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
     style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
     style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
-    style.Colors[ImGuiCol_Button] = ImVec4(0.40f, 0.39f, 0.38f, 0.16f);
+    style.Colors[ImGuiCol_Button] = ImVec4(0.3f, 0.0f, 1.0f, 0.80f);
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.40f, 0.39f, 0.38f, 0.39f);
     style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
     style.Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
@@ -558,54 +883,75 @@ void stylish()
     style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
 }
-void error_window(std::string error)
+void stylish_survival()
 {
-    ImGui::SetNextWindowSize(ImVec2(400, 400));
-    if (ImGui::Begin("Error !!", &error_button,
-        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize))
-    {
-        ImGui::Text(error.c_str());
-        if (ImGui::Button("close", ImVec2(130, 50)))
-        {
-            error_button = false;
-        }
-    }ImGui::End();
-
+    ImGui::StyleColorsDark();
+    ImGuiStyle& style = ImGui::GetStyle();
+    ImGui::SetWindowFontScale(1);
+    style.WindowPadding = ImVec2(15, 15);
+    style.WindowRounding = 0.0f;
+    style.FramePadding = ImVec2(5, 5);
+    style.FrameRounding = 0.0f;
+    style.ItemSpacing = ImVec2(12, 8);
+    style.ItemInnerSpacing = ImVec2(8, 6);
+    style.IndentSpacing = 25.0f;
+    style.ScrollbarSize = 15.0f;
+    style.ScrollbarRounding = 0.0f;
+    style.GrabMinSize = 5.0f;
+    style.GrabRounding = 0.0f;
+    style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.0f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style.Colors[ImGuiCol_WindowBg] = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
+    style.Colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
+    style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 0.00f, 0.0f, 0.88f);
+    style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.92f, 0.91f, 0.88f, 0.00f);
+    style.Colors[ImGuiCol_FrameBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(1.00f, 0.98f, 0.95f, 0.75f);
+    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.07f, 0.07f, 0.09f, 1.00f);
+    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.80f, 0.80f, 0.83f, 0.31f);
+    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style.Colors[ImGuiCol_Button] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.24f, 0.23f, 0.29f, 1.00f);
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style.Colors[ImGuiCol_Header] = ImVec4(0.10f, 0.09f, 0.12f, 1.00f);
+    style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+    style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.56f, 0.56f, 0.58f, 1.00f);
+    style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.06f, 0.05f, 0.07f, 1.00f);
+    style.Colors[ImGuiCol_Button] = ImVec4(0.00f, 0.0f, 0.0f, 0.4f);
+    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.40f, 0.39f, 0.38f, 0.39f);
+    style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 0.0f, 0.0f, 0.8f);
+    style.Colors[ImGuiCol_PlotLines] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+    style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.40f, 0.39f, 0.38f, 0.63f);
+    style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.25f, 1.00f, 0.00f, 1.00f);
+    style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.25f, 1.00f, 0.00f, 0.43f);
+    style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.98f, 0.95f, 0.73f);
 }
+
 std::vector < std::string> Q_A(std::string Categorey ,std::string Dificulty ,std::string Mode)
 {
-    /*
-    std::string Categorey = "Japanese Anime & Manga";
-    std::string Dificulty = "easy";
-    std::string Mode = "PvP";
-    */
-    int t = tedad_soal(Mode);
-    std::string url = URL_maker(Dificulty, Categorey, t);
-    //nlohmann::json json_string = curler(url, t);
-    std::vector <std::string> vec = curler(url, t);
-    ////////////////////////////////////////////////////
-    //std::cout << "\n\n\n\n\n\n";
-    return vec;
+    {
+        int t = tedad_soal(Mode);
+        std::string url = URL_maker(Dificulty, Categorey, t);
+        std::vector <std::string> vec = curler(url, t);
+        return vec;
+    }
 }
-/*
-std::string random_categorey()
+void timer(int seconds)
 {
-    srand(time(0));
-    ImGui::Text("Choose Categorey :");
-    int r1 = (rand() % (32 - 9 + 1)) + 9;
-    int r2 = (rand() % (32 - 9 + 1)) + 9;
-    int r3 = (rand() % (32 - 9 + 1)) + 9;
-    if (r1 == r2)
-    {
-        r1 += 1;
-    }
-    if (r1 == r3)
-    {
-        r1 += 1;
-    }
-    if (r2 == r3)
-    {
-        r2 += 1;
-    }
-    return find
-}*/
+    ImVec2 size = ImGui::GetContentRegionAvail();
+    ImGui::SetCursorPos(ImVec2((size.x - 40) / 2, (size.y - 40) / 2));
+    Im_Spinner("##s", 20, 5, IM_COL32(255, 255, 255, 255));
+    Sleep(seconds * 1000);
+}

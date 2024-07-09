@@ -1,0 +1,122 @@
+How many kilobytes in one gigabyte (in decimal)?
+1000000
+1024
+1000
+1048576
+When Gmail first launched, how much storage did it provide for your email?
+1GB
+512MB
+5GB
+Unlimited
+In the programming language Java, which of these keywords would you put on a variable to make sure it doesn&#039;t get modified?
+Final
+Static
+Private
+Public
+If you were to code software in this language you&#039;d only be able to type 0&#039;s and 1&#039;s.
+Binary
+JavaScript
+C++
+Python
+The series of the Intel HD graphics generation succeeding that of the 5000 and 6000 series (Broadwell) is called:
+HD Graphics 500
+HD Graphics 700 
+HD Graphics 600
+HD Graphics 7000
+e
+Microsoft
+Atari
+Commodore
+as 
+Hexidecimal
+Binary
+Duodecimal
+Octal
+sing by stereo ecorazer
+Light amplifier by standby energy of radio
+Life antimatter by standing entry of range
+How many chromosomes are in your body cells?
+23
+21
+22
+24
+Who is the chemical element Curium named after?
+Marie &amp; Pierre Curie
+The Curiosity Rover
+Curious George
+Stephen Curry
+What is the &quot;powerhouse&quot; of the Eukaryotic animal cell?
+Mitochondria
+Nucleus
+Chloroplast
+Endoplasmic Reticulum
+The human heart has how many chambers?
+4
+2
+6
+3
+Which of these Elements is a metalloid?
+Antimony
+Tin
+Bromine
+Rubidium
+What is the standard atomic weight of a Plutonium nucleus?
+244
+94
+481
+128
+Which is the most abundant element in the universe?
+Hydrogen
+Helium
+Lithium
+Oxygen
+Which gas forms about 78% of the Earth&rsquo;s atmosphere?
+Nitrogen
+Oxygen
+Argon
+Carbon Dioxide
+Which of the following blood vessels carries deoxygenated blood?
+Pulmonary Artery
+Pulmonary Vein
+Aorta
+Coronary Artery
+How many planets make up our Solar System?
+8
+7
+9
+6
+What is the speed of light in a vacuum?
+299,792,458 m/s
+50,461 m/s
+308,215,043 m/s
+751,665,014,151 m/s
+What is the primary addictive substance found in tobacco?
+Nicotine
+Cathinone
+Ephedrine
+Glaucine
+What was the name of the first artificial Earth satellite, launched by the Soviet Union in 1957?
+Sputnik 1
+Soyuz 7K-OK
+Zenit-2
+Voskhod 3KV
+nary War?
+Paul Revere
+Thomas Paine
+Henry Longfellow
+Nathan Hale
+In 1453, which important city fell?
+Constantinople
+Rome
+Hamburg
+Athens
+When was Google founded?
+September 4, 1998
+October 9, 1997
+December 12, 1989
+Feburary 7th, 2000
+The &quot;Trail of Tears&quot; was a result of which United States President&#039;s Indian Removal Policy?
+Andrew Jackson
+Harry S. Truman
+Martin Van Buren
+John Quincy Adams
